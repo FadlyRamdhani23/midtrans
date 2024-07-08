@@ -8,24 +8,28 @@ $api_url = $is_production ?
   'https://app.midtrans.com/snap/v1/transactions' : 
   'https://app.sandbox.midtrans.com/snap/v1/transactions';
 
-
-// Check if request doesn't contains `/charge` in the url/path, display 404
-if( !strpos($_SERVER['REQUEST_URI'], '/charge') ) {
+// Check if request contains `/charge` in the url/path, otherwise display 404
+if (strpos($_SERVER['REQUEST_URI'], '/charge') === false) {
   http_response_code(404); 
-  echo "wrong path, make sure it's `/charge`"; exit();
+  echo json_encode(['message' => "wrong path, make sure it's `/charge`"]);
+  exit();
 }
+
 // Check if method is not HTTP POST, display 404
-if( $_SERVER['REQUEST_METHOD'] !== 'POST'){
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
   http_response_code(404);
-  echo "Page not found or wrong HTTP request method is used"; exit();
+  echo json_encode(['message' => "Page not found or wrong HTTP request method is used"]);
+  exit();
 }
 
 // get the HTTP POST body of the request
 $request_body = file_get_contents('php://input');
 // set response's content type as JSON
 header('Content-Type: application/json');
+
 // call charge API using request body passed by mobile SDK
 $charge_result = chargeAPI($api_url, $server_key, $request_body);
+
 // set the response http status code
 http_response_code($charge_result['http_code']);
 // then print out the response body
@@ -37,7 +41,7 @@ echo $charge_result['body'];
  * @param string  $server_key
  * @param string  $request_body
  */
-function chargeAPI($api_url, $server_key, $request_body){
+function chargeAPI($api_url, $server_key, $request_body) {
   $ch = curl_init();
   $curl_options = array(
     CURLOPT_URL => $api_url,
@@ -57,5 +61,12 @@ function chargeAPI($api_url, $server_key, $request_body){
     'body' => curl_exec($ch),
     'http_code' => curl_getinfo($ch, CURLINFO_HTTP_CODE),
   );
+
+  if (curl_errno($ch)) {
+    // If there's an error, return it in the response
+    $result['body'] = json_encode(['message' => 'Curl error: ' . curl_error($ch)]);
+  }
+  
+  curl_close($ch);
   return $result;
 }
