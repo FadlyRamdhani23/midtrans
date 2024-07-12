@@ -1,8 +1,9 @@
 <?php
 // Set your server key (Note: Server key for sandbox and production mode are different)
-$server_key = 'SB-Mid-server-laJdQwlZdwlHcHNtdXt26pgy';
+// Ganti ini dengan kunci server production Anda
+$server_key = 'Mid-server-gnTaM2EkYF6dihT-wxdohPk4';
 // Set true for production, set false for sandbox
-$is_production = false;
+$is_production = true;
 
 $api_url = $is_production ? 
   'https://app.midtrans.com/snap/v1/transactions' : 
@@ -70,3 +71,4 @@ function chargeAPI($api_url, $server_key, $request_body) {
   curl_close($ch);
   return $result;
 }
+?>
